@@ -104,10 +104,16 @@ termdepositforecast/
 ├── data/                                       # Données du projet     
 │   └── raw/                                    # Données brutes
 │       └── bank-additional-full.csv            # Dataset principal pour l'analyse et l'entraînement
-│       └── bank-additional.csv                 # Dataset utilisé pour tester l'API 
+│       └── bank-additional.csv                 # Dataset utilisé pour tester l'API
+│   └── outputs/                                # Données de sortie
+│       └── mineurs.csv                         # Extraction des mineurs du jeu de données 
 ├── notebook/                                   # Notebooks pour exploration et analyses
 │   └── exploration.ipynb                       # Exploration des données
 │   └── eda.ipynb                               # Analyse exploratoire des données
+├── pipelines/                                  # Pipelines pour le prétraitement et l'entraînement des modèles
+│   └── preprocess.py                           # Pipeline de prétraitement des données
+├── utils.py                                    # Fonctions utilitaires réutilisables
+├── environment.yml                             # Dépendances
 ├── cover_image.jpg                             # Image de couverture du projet
 └── README.md                                   # Documentation du projet
 ```
