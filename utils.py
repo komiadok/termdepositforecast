@@ -144,3 +144,88 @@ def plot_pie_chart(df, column, title, explode_cats=None):
 
     # Affichage
     plt.show()
+
+def plot_subscription_rate(ax, df, column, title, orientation="horizontal"):
+    """
+    Description:
+        Trace un barplot du taux de souscription (y=1) par catégorie.
+
+    Arguments:
+        df : le dataframe contenant les données.
+        column (str) : la colonne catégorielle utilisée pour grouper.
+        ax : l'axe sur lequel dessiner le graphique. 
+        title (str) : le titre du graphique.
+        orientation (str) : "horizontal" ou "vertical", direction des barres.
+
+    Retourne:
+        Un barplot avec des annotations
+    """
+    
+    # Calcul du taux de souscription par catégorie
+    rates = (
+        df.groupby(column, observed=True)['y']
+          .mean()  # calcule la moyenne
+          .reset_index(name='subscription_rate')
+          .sort_values('subscription_rate', ascending=False)
+    )
+    
+    # Palette de couleurs : du vert foncé (taux élevés) au vert clair (taux faibles)
+    colors = sns.color_palette("Greens", n_colors=len(rates))
+
+    # Création du barplot horizontal
+    if orientation == "horizontal":
+        sns.barplot(
+            data=rates,
+            y=column,
+            x='subscription_rate',
+            hue='subscription_rate',
+            palette=colors,
+            legend=False,
+            ax=ax,
+            order=rates[column]  # trier les barres
+        )
+        
+        # Ajout des taux en pourcentage à droite des barres
+        for p in ax.patches:
+            ax.annotate(
+                f"{p.get_width()*100:.1f}%",
+                (p.get_x() + p.get_width() + 0.001, p.get_y() + p.get_height()/2),
+                ha='left', va='center', fontsize=10
+            )
+        
+        # Personnalisation finale
+        ax.set_xlabel("")   # supprimer label X
+        ax.set_ylabel("")   # supprimer label Y
+        ax.set_xticks([])   # supprimer ticks X
+
+    # Création du barplot vertical
+    elif orientation == "vertical":
+        sns.barplot(
+            data=rates,
+            x=column,
+            y='subscription_rate',
+            hue='subscription_rate',
+            palette=colors,
+            legend=False,
+            ax=ax,
+            order=rates[column]  # trier les barres
+        )
+        
+        # Ajout des taux en pourcentage au-dessus des barres
+        for p in ax.patches:
+            ax.annotate(
+                f"{p.get_height()*100:.1f}%",
+                (p.get_x() + p.get_width()/2, p.get_height() + 0.005),
+                ha='center', va='bottom', fontsize=10
+            )
+        
+        # Personnalisation finale
+        ax.set_xlabel("")   # supprimer label X
+        ax.set_ylabel("")   # supprimer label Y
+        ax.set_yticks([])   # supprimer ticks X
+        
+    else:
+        raise ValueError("orientation doit être 'horizontal' ou 'vertical'")
+
+    # Définition du titre
+    ax.set_title(title, fontsize=12, fontweight='bold')
