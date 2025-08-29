@@ -19,6 +19,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.stats import ttest_ind, levene, probplot, skew, mannwhitneyu, chi2_contingency 
+from sklearn.preprocessing import FunctionTransformer
+from sklearn.metrics import precision_recall_curve
+
 # =============================
 # 📊 Visualisations
 # =============================
@@ -479,3 +482,91 @@ def spearman_corr_matrix(data, numeric_cols, figsize=(10,5), annot=True, cmap="c
     plt.show()
 
     return corr_matrix
+
+# =============================
+# 🏷️ Encodage sin/cos
+# =============================
+
+class CyclicEncoder(FunctionTransformer):
+    def __init__(self, max_vals, feature_names):
+        """
+        Description:
+            Encodeur cyclique pour variables périodiques (mois, jours, heures, etc.)
+            Transforme une variable x en (sin(2πx/max), cos(2πx/max)).
+
+        Arguments:
+            max_vals (list[int]) : valeur maximale possible pour chaque feature (ex: [12] pour mois, [5] pour jours semaine).
+            feature_names (list[str]) : noms des colonnes d'entrée (pour générer les noms des colonnes en sortie).
+        """
+        
+        self.max_vals = max_vals
+        self.feature_names = feature_names
+        super().__init__(func=lambda X: self._encode(X)) # On définit la fonction de transformation via FunctionTransformer
+
+    def _encode(self, X):
+        """
+        Applique la transformation cyclique à chaque colonne.
+        Pour chaque valeur, calcule (sin(2πx/max), cos(2πx/max)).
+        """
+        
+        X = np.array(X, dtype=float)
+        result = []
+
+        # Transformation colonne par colonne
+        for i in range(X.shape[1]):
+            X_sin = np.sin(2 * np.pi * X[:, i] / self.max_vals[i])   # projection sur sin
+            X_cos = np.cos(2 * np.pi * X[:, i] / self.max_vals[i])   # projection sur cos
+            result.append(X_sin)
+            result.append(X_cos)
+
+        # Empilement en colonnes sin/cos
+        return np.column_stack(result)
+
+    def get_feature_names_out(self, input_features=None):
+        """
+        Génère les noms des features transformées.
+        Exemple : 'month' → 'month_sin', 'month_cos'
+        """
+        
+        names = []
+        for name in self.feature_names:
+            names.extend([f"{name}_sin", f"{name}_cos"])
+        return np.array(names)
+
+# =============================
+# 🧰 Entraînement du modèle
+# =============================
+
+def find_threshold_with_recall_priority(y_true, y_score, min_precision=0.35):
+    """
+    Trouve le seuil qui maximise le rappel tout en gardant une précision >= min_precision.
+    
+    Arguments :
+        y_true : liste ou array des vraies étiquettes (0/1)
+        y_score: liste ou array des probabilités prédites
+        min_precision : précision minimale acceptable
+    
+    Retourne :
+        dict avec le seuil choisi, précision, rappel, et toutes les valeurs
+    """
+    precision, recall, thresholds = precision_recall_curve(y_true, y_score)
+
+    # On ignore le premier point (precision/recall ont une taille +1)
+    precision = precision[1:]
+    recall = recall[1:]
+    thresholds = thresholds
+
+    # Filtrer les points où la précision >= min_precision
+    mask = precision >= min_precision
+    if not np.any(mask):
+        return {"error": f"Aucun seuil avec précision >= {min_precision}"}
+
+    # Parmi ceux qui respectent la précision, on prend celui avec le meilleur rappel
+    idx = np.argmax(recall[mask])
+    selected_threshold = thresholds[mask][idx]
+
+    return {
+        "threshold": float(selected_threshold),
+        "precision": float(precision[mask][idx]),
+        "recall": float(recall[mask][idx])
+    }
