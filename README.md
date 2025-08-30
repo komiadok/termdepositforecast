@@ -65,8 +65,6 @@ Ce jeu de données contient des données liées aux campagnes marketing direct d
 
 ### 📋 Prérequis 
 
-* Installer [Visual Studio Code](https://code.visualstudio.com/)
-  > Télécharger la version correspondante à ton OS (Windows / Mac / Linux)
 * Installer [Miniconda](https://www.anaconda.com/download/)
   > Entrer son email et choisir la distribution de Miniconda adaptée.<br>
   > S'assurer que `(base)` apparaît devant le chemin du disque dur après installation.
@@ -75,8 +73,7 @@ Ce jeu de données contient des données liées aux campagnes marketing direct d
 
 * Python : langage utilisé pour les analyses de données et la modélisation prédictive.
 * GitHub : plateforme utilisée pour le versionnage du code et le stockage en ligne du projet.
-* Jupyter Notebook (via Miniconda) : environnement interactif utilisé pour l’exploration et la visualisation des données.
-* VS Code : environnement de développement utilisé pour le développement et le déploiement des pipelines.
+* Jupyter Notebook (via Miniconda) : environnement interactif utilisé pour l’exploration, la visualisation des données et le développement des pipelines.
 
 ### 📦 Librairies Python utilisées
 
@@ -96,6 +93,20 @@ Ce jeu de données contient des données liées aux campagnes marketing direct d
 
 ---
 
+## ▶️ Lancer l’API
+
+* Exécuter la commande suivante dans un terminal (celui de Miniconda ou Jupyter Notebook) :
+  `uvicorn main:app --reload`
+  > S'assurer que le message **Application startup complete** apparaisse.
+* Ouvrir ton navigateur et aller sur 👉 `http://127.0.0.1:8000/docs`
+* Tester la route `POST /predict`
+  * Cliquer sur **Try it out**
+  * Uploader le fichier CSV contenant les données à prédire
+  * Exécuter la requête
+* L'API renverra un fichier CSV téléchargeable via `Download file`
+
+---
+
 ## 📂 Organisation du projet
 
 ```
@@ -110,9 +121,15 @@ termdepositforecast/
 ├── notebook/                                   # Notebooks pour exploration et analyses
 │   └── exploration.ipynb                       # Exploration des données
 │   └── eda.ipynb                               # Analyse exploratoire des données
+│   └── model_selection.ipynb                   # Choix du meilleur modèle
+│   └── train.ipynb                             # Entraînement du meilleur modèle
+├── models/                                     # Dossier de sauvegarde du modèle entraîné
+│   └── deposit_model.pkl                       # Modèle sauvegardé
 ├── pipelines/                                  # Pipelines pour le prétraitement et l'entraînement des modèles
 │   └── preprocess.py                           # Pipeline de prétraitement des données
+│   └── train.py                                # Pipeline d'entraînement des données
 ├── utils.py                                    # Fonctions utilitaires réutilisables
+├── main.py                                     # Fonctions principales pour le lancement de l'API
 ├── environment.yml                             # Dépendances
 ├── cover_image.jpg                             # Image de couverture du projet
 └── README.md                                   # Documentation du projet
